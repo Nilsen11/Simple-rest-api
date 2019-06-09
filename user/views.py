@@ -20,7 +20,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
 
 class UserList(generics.ListCreateAPIView):
-    """Show users for admin"""
+    """Show user for admin"""
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser,)
 
     queryset = get_user_model().objects.all()
