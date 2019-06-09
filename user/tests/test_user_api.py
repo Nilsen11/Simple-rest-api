@@ -11,10 +11,15 @@ CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
 REFRESH_TOKEN_URL = reverse('user:token-refresh')
 ME_URL = reverse('user:me')
+USERS_URL = reverse('user:users')
 
 
 def create_user(**params):
     return get_user_model().objects.create_user(**params)
+
+
+def create_superuser(**params):
+    return get_user_model().objects.create_superuser(**params)
 
 
 class PublicUserApiTests(TestCase):
@@ -72,7 +77,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_create_token_refresh_for_user(self):
-        """Test that create refresh token using access token"""
+        """Test that create refresh token"""
         payload = {
             'email': 'test@gmail.com',
             'password': 'testpass',
@@ -156,3 +161,15 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(self.user.name, payload['name'])
         self.assertTrue(self.user.check_password(payload['password']))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+    def test_show_all_users_for_superuser(self):
+        """Test that show all users for SuperUser"""
+        user = create_superuser(
+            email='admin@gmail.com',
+            password='admin',
+        )
+
+        self.client.force_authenticate(user=user)
+        res = self.client.get(USERS_URL)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 2)

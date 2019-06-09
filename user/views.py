@@ -1,5 +1,6 @@
-from rest_framework import generics, authentication, permissions
+from rest_framework import generics, permissions
 from .serializers import UserSerializer
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 from django.contrib.auth import get_user_model
 
@@ -12,6 +13,7 @@ class CreateUserView(generics.CreateAPIView):
 class ManageUserView(generics.RetrieveUpdateAPIView):
     """Manage the authenticated user"""
     serializer_class = UserSerializer
+    authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_object(self):
@@ -21,6 +23,7 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
 
 class UserList(generics.ListCreateAPIView):
     """Show user for admin"""
+    authentication_classes = (JSONWebTokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated, permissions.IsAdminUser,)
 
     queryset = get_user_model().objects.all()
