@@ -117,7 +117,7 @@ class PublicUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_retrieve_user_unauthorized(self):
-        """Test that url ME_URL unavailable for unauthorized users """
+        """Test that url ME_URL unavailable for unauthorized users"""
         res = self.client.get(ME_URL)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -163,7 +163,7 @@ class PrivateUserApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
     def test_show_all_users_for_superuser(self):
-        """Test that show all users for SuperUser"""
+        """Test that url USERS_URL available for SuperUsers"""
         user = create_superuser(
             email='admin@gmail.com',
             password='admin',
@@ -173,3 +173,15 @@ class PrivateUserApiTests(TestCase):
         res = self.client.get(USERS_URL)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 2)
+
+    def test_unavailable_all_users_for_user(self):
+        """Test that url USERS_URL unavailable for Users"""
+        user = create_user(
+            email='testss@gmail.com',
+            password='ssssss',
+        )
+
+        self.client.force_authenticate(user=user)
+        res = self.client.get(USERS_URL)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+

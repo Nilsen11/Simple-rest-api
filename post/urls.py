@@ -2,9 +2,11 @@ from django.urls import path
 
 from . import views
 
+app_name = 'post'
+
 urlpatterns = [
-    path('', views.PostList.as_view()),
-    path('<int:pk>/', views.PostDetail.as_view()),
-    path('like/<str:title>/', views.PostListLike.as_view()),
-    path('unlike/<str:title>/', views.PostListUnLike.as_view()),
+    path('', views.PostList.as_view(), name='show-posts'),
+    path('<int:pk>/', views.PostDetail.as_view(), name="post-detail"),
+    path('like/<str:title>/', views.PostListLike.as_view(), name='post-like'),
+    path('unlike/<str:title>/', views.PostListUnLike.as_view(), name='post-unlike'),
 ]
