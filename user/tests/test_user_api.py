@@ -14,7 +14,6 @@ ME_URL = reverse('user:me')
 USERS_URL = reverse('user:users')
 
 
-
 def create_user(**params):
     return get_user_model().objects.create_user(**params)
 
