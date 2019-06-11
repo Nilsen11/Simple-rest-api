@@ -45,8 +45,8 @@ class ModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
 
-    def test_tag_str(self):
-        """Test the tag string representation"""
+    def test_post_str(self):
+        """Test the post string representation"""
         Post = models.Post.objects.create(
             user=sample_user(),
             title="Vegan"
