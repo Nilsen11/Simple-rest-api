@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from core import models
+from django.contrib.auth import get_user_model
 
 
 class PostSerializer(serializers.ModelSerializer):

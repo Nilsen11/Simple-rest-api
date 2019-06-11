@@ -14,6 +14,7 @@ ME_URL = reverse('user:me')
 USERS_URL = reverse('user:users')
 
 
+
 def create_user(**params):
     return get_user_model().objects.create_user(**params)
 
@@ -184,4 +185,3 @@ class PrivateUserApiTests(TestCase):
         self.client.force_authenticate(user=user)
         res = self.client.get(USERS_URL)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-

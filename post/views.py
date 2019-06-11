@@ -1,46 +1,37 @@
 from rest_framework import generics
 from core.models import Post
 from .serializers import PostSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 
-class PostList(generics.ListAPIView, generics.CreateAPIView):
-    """Class that show all posts for authenticated users"""
+class IsUser(BasePermission):
+    """
+    Allows access only to users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and not request.user.is_staff)
+
+
+class CreatePost(generics.CreateAPIView):
     serializer_class = PostSerializer
     authentication_classes = (JSONWebTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def override_allowed_method(self):
-        if self.request.user.is_superuser:
-            self.http_method_names = ['get', 'options']
-
-    def get_queryset(self):
-        self.override_allowed_method()
-
-        return Post.objects.all()
+    permission_classes = (IsAuthenticated, IsUser,)
 
     def perform_create(self, serializer):
         """Create a new Post"""
         serializer.save(user=self.request.user)
 
 
-class PostListLike(PostList, generics.ListAPIView, generics.CreateAPIView):
-    """Class that show all "posts like" for authenticated users"""
+class UserPosts(generics.ListAPIView):
+    serializer_class = PostSerializer
+    authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        self.override_allowed_method()
-
-        return Post.objects.filter(title__icontains=self.kwargs["title"])
-
-
-class PostListUnLike(PostList, generics.ListAPIView, generics.CreateAPIView):
-    """Class that show all "posts unlike" for authenticated users"""
-
-    def get_queryset(self):
-        self.override_allowed_method()
-
-        return Post.objects.exclude(title__icontains=self.kwargs["title"])
+        queryset = Post.objects.filter(user__name=self.kwargs['username'])
+        return queryset
 
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -49,8 +40,33 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = Post.objects.all()
+        queryset = Post.objects.filter(user=self.request.user, id=self.kwargs["pk"])
 
-        if not queryset.filter(user=self.request.user, id=self.kwargs["pk"]) or self.request.user.is_superuser:
-            self.http_method_names = ['get', 'options']
+        if self.request.user.is_superuser:
+            queryset = Post.objects.filter(id=self.kwargs["pk"])
+
         return queryset
+
+
+class PostList(generics.ListAPIView):
+    """Class that show all posts for authenticated users"""
+    serializer_class = PostSerializer
+    authentication_classes = (JSONWebTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Post.objects.all()
+
+
+class PostListLike(PostList, generics.ListAPIView, generics.CreateAPIView):
+    """Class that show all "posts like" for authenticated users"""
+
+    def get_queryset(self):
+        return Post.objects.filter(title__icontains=self.kwargs["title"])
+
+
+class PostListUnLike(PostList, generics.ListAPIView, generics.CreateAPIView):
+    """Class that show all "posts unlike" for authenticated users"""
+
+    def get_queryset(self):
+        return Post.objects.exclude(title__icontains=self.kwargs["title"])
