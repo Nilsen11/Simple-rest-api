@@ -38,7 +38,7 @@ class PublicPostApiTests(TestCase):
             user=create_user(
                 email='test@gmail.com',
                 password='test123',
-                name='name'
+                username='name'
             ),
             title="Title1",
             content="Content1",
@@ -67,7 +67,7 @@ class PrivatePostApiTests(TestCase):
         self.user = create_user(
             email='test@gmail.com',
             password='test123',
-            name='name'
+            username='name'
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -138,6 +138,8 @@ class PrivatePostApiTests(TestCase):
         url = reverse("post:post-detail", kwargs={'pk': post.id})
         res = self.client.put(url, payload)
 
+        post.refresh_from_db()
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['title'], payload['title'])
         self.assertEqual(res.data['content'], payload['content'])
@@ -162,7 +164,7 @@ class PrivatePostApiTests(TestCase):
             user=create_user(
                 email='AnotherUser@gmail.com',
                 password='testpassword123',
-                name='NewName'),
+                username='NewName'),
             title="Title1",
             content='Contetn'
         )
@@ -177,7 +179,7 @@ class PrivatePostApiTests(TestCase):
             user=create_user(
                 email='AnotherUser@gmail.com',
                 password='testpassword123',
-                name='NewName'),
+                username='NewName'),
             title="Title1",
             content='Contetn'
         )
@@ -197,7 +199,7 @@ class PrivatePostApiTests(TestCase):
             user=create_user(
                 email='AnotherUser@gmail.com',
                 password='testpassword123',
-                name='NewName'),
+                username='NewName'),
             title="Title1",
             content='Content'
         )
@@ -208,7 +210,7 @@ class PrivatePostApiTests(TestCase):
 
     def test_method_get_for_username_post(self):
         """Test that user get on url USERNAME_POST_URL"""
-        url = reverse('post:post-username', kwargs={'username': self.user.name})
+        url = reverse('post:post-username', kwargs={'username': self.user.username})
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(len(res.data), 1)
@@ -221,7 +223,7 @@ class PrivateAdminPostApiTests(TestCase):
         self.user = create_superuser(
             email='admin@gmail.com',
             password='admin123',
-            name='AdminName'
+            username='AdminName'
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -229,7 +231,7 @@ class PrivateAdminPostApiTests(TestCase):
             user=create_user(
                 email='AnotherUser@gmail.com',
                 password='testpassword123',
-                name='NewName'),
+                username='NewName'),
             title="Some title",
             content='Content',
         )
@@ -259,7 +261,12 @@ class PrivateAdminPostApiTests(TestCase):
 
         url = reverse("post:post-detail", kwargs={'pk': self.post.id})
         res = self.client.put(url, payload)
+
+        self.post.refresh_from_db()
+
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(payload['title'], self.post.title)
+        self.assertEqual(payload['content'], self.post.content)
 
     def test_get_post_for_admin(self):
         """Test that SuperUser can get post"""

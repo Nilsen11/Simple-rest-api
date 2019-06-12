@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
     PermissionsMixin
+from user.clearbit import clearbitCheck
 
 
 class UserManager(BaseUserManager):
@@ -10,6 +11,14 @@ class UserManager(BaseUserManager):
         """Creates and saves a new user """
         if not email:
             raise ValueError('Users must have an email address')
+
+        user_data = clearbitCheck(email=email)
+        if user_data:
+            extra_fields['fullName'] = user_data['fullName']
+            extra_fields['givenName'] = user_data['givenName']
+            extra_fields['location'] = user_data['location']
+            extra_fields['timeZone'] = user_data['timeZone']
+
         user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -29,7 +38,11 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """Custom user model that supports using email instead of username"""
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255, unique=True)
+    username = models.CharField(max_length=255, unique=True)
+    fullName = models.CharField(max_length=255, default='')
+    givenName = models.CharField(max_length=255, default='')
+    location = models.CharField(max_length=255, default='')
+    timeZone = models.CharField(max_length=255, default='')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -38,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
     def __str__(self):
-        return self.name
+        return self.username
 
 
 class Post(models.Model):

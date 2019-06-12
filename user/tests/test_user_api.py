@@ -33,7 +33,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             'email': 'test@gmail.com',
             'password': 'testpass',
-            'name': 'Test name'
+            'username': 'Test name'
         }
         res = self.client.post(CREATE_USER_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -46,6 +46,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             'email': 'test@gmail.com',
             'password': 'testpass',
+            'username': 'Test name'
         }
         create_user(**payload)
         res = self.client.post(CREATE_USER_URL, payload)
@@ -56,6 +57,7 @@ class PublicUserApiTests(TestCase):
         payload = {
             'email': 'test@gmail.com',
             'password': 'pw',
+            'username': 'Test name'
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
@@ -129,7 +131,7 @@ class PrivateUserApiTests(TestCase):
         self.user = create_user(
             email='test@gmail.com',
             password='test123',
-            name='name'
+            username='name'
         )
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -139,10 +141,8 @@ class PrivateUserApiTests(TestCase):
         res = self.client.get(ME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data, {
-            'name': self.user.name,
-            'email': self.user.email
-        })
+        self.assertEqual(res.data['username'], self.user.username)
+        self.assertEqual(res.data['email'], self.user.email)
 
     def test_post_me_not_allowed(self):
         """Test that POST is not allowed on the ME_URL"""
@@ -152,13 +152,13 @@ class PrivateUserApiTests(TestCase):
 
     def test_update_user_profile(self):
         """Test updating the user profile for authenticated user"""
-        payload = {'name': 'new name', 'password': 'newpassword1432'}
+        payload = {'username': 'new name', 'password': 'newpassword1432'}
 
         res = self.client.patch(ME_URL, payload)
 
         self.user.refresh_from_db()
 
-        self.assertEqual(self.user.name, payload['name'])
+        self.assertEqual(self.user.username, payload['username'])
         self.assertTrue(self.user.check_password(payload['password']))
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
@@ -167,6 +167,7 @@ class PrivateUserApiTests(TestCase):
         user = create_superuser(
             email='admin@gmail.com',
             password='admin',
+            username='adminuser'
         )
 
         self.client.force_authenticate(user=user)
@@ -179,6 +180,7 @@ class PrivateUserApiTests(TestCase):
         user = create_user(
             email='testss@gmail.com',
             password='ssssss',
+            username='name2'
         )
 
         self.client.force_authenticate(user=user)

@@ -30,7 +30,7 @@ class UserPosts(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = Post.objects.filter(user__name=self.kwargs['username'])
+        queryset = Post.objects.filter(user__username=self.kwargs['username'])
         return queryset
 
 
