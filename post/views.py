@@ -58,14 +58,14 @@ class PostList(generics.ListAPIView):
         return Post.objects.all()
 
 
-class PostListLike(PostList, generics.ListAPIView, generics.CreateAPIView):
+class PostListLike(PostList):
     """Class that show all "posts like" for authenticated users"""
 
     def get_queryset(self):
         return Post.objects.filter(title__icontains=self.kwargs["title"])
 
 
-class PostListUnLike(PostList, generics.ListAPIView, generics.CreateAPIView):
+class PostListUnLike(PostList):
     """Class that show all "posts unlike" for authenticated users"""
 
     def get_queryset(self):
